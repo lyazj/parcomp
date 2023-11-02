@@ -1,0 +1,12 @@
+***************value evaluation*****************
+body_number = 2^2 step_number = 2^4
+reference impl.: difference_1=1.813549e-14 difference_2=1.818989e-12
+your impl.     : difference_1=0.000000e+00 difference_2=0.000000e+00
+
+difference_1=max{fabs((rValue[i]-value[i])/rValue[i])}
+difference_2=fabs(rValue[k]-value[k]) if fabs((rValue[k]-value[k])/rValue[i])=max{fabs((rValue[i]-value[i])/rValue[i])}
+rValue----value resulted by serial impl.; value----value resulted by reference impl. or your impl.
+************performance evaluation**************
+reference serial impl.  : time_cost=1.9100e-05
+reference parallel impl.: time_cost=5.3440e-04 speedup=0.036   
+your impl.              : time_cost=4.0696e-04 speedup=0.047   

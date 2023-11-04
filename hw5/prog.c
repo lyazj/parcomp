@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
   // 每个进程各自知道自己拥有的片段的长度，但它们未必相等
   // 首先计算片段长度前缀和，供下面进行数据交换的代码所使用
   // 然后由前缀和获取数组总长度，以确定需要分配的缓冲区大小
-  int presum_length[np];
+  int my_presum_length = -1, presum_length[np];
   memset(presum_length, -1, sizeof presum_length);
-  MPI_Scan(&length, &presum_length[rank], 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  printf("[%2d] presum length: %d\n", rank, presum_length[rank]);
-  MPI_Allgather(&presum_length[rank], 1, MPI_INT, presum_length, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Scan(&length, &my_presum_length, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  printf("[%2d] presum length: %d\n", rank, my_presum_length);
+  MPI_Allgather(&my_presum_length, 1, MPI_INT, presum_length, 1, MPI_INT, MPI_COMM_WORLD);
   int total_length = presum_length[np - 1];
   printf("[%2d] total length: %d\n", rank, total_length);
   int slice_length = (total_length - rank + np - 1) / np;

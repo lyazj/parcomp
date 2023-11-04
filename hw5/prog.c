@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   // 匹配：MPI_Scatter(dist, 1, MPI_INT, NULL, 0, MPI_INT, MPI_ROOT, inter_comm); 
   int length = -1;
   MPI_Scatter(NULL, 0, MPI_INT, &length, 1, MPI_INT, root, parent);
-  printf("[%2d] length: %d\n", rank, length);
+  //printf("[%2d] length: %d\n", rank, length);
   if(length < 0) errx(EXIT_FAILURE, "expect non-negative length, got %d", length);
 
   // 数组即将在本进程组内的 np 个进程的地址空间中顺序分布式存储
@@ -42,19 +42,19 @@ int main(int argc, char *argv[])
   int my_presum_length = -1, presum_length[np];
   memset(presum_length, -1, sizeof presum_length);
   MPI_Scan(&length, &my_presum_length, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  printf("[%2d] presum length: %d\n", rank, my_presum_length);
+  //printf("[%2d] presum length: %d\n", rank, my_presum_length);
   MPI_Allgather(&my_presum_length, 1, MPI_INT, presum_length, 1, MPI_INT, MPI_COMM_WORLD);
   int total_length = presum_length[np - 1];
-  printf("[%2d] total length: %d\n", rank, total_length);
+  //printf("[%2d] total length: %d\n", rank, total_length);
   int slice_length = (total_length - rank + np - 1) / np;
-  printf("[%2d] slice length: %d\n", rank, slice_length);
+  //printf("[%2d] slice length: %d\n", rank, slice_length);
 
   // 从父进程组接收数组内容
   // 匹配：MPI_Scatterv(a, dist, displ, MPI_INT, NULL, 0, MPI_INT, MPI_ROOT, inter_comm);        
   int *buf = (int *)malloc(length * sizeof(int));
   if(buf == NULL) errx(EXIT_FAILURE, "error allocating memory");
   MPI_Scatterv(NULL, NULL, NULL, MPI_INT, buf, length, MPI_INT, root, parent);
-  printf("[%2d] data received from parent\n", rank);
+  //printf("[%2d] data received from parent\n", rank);
 
   // 在进程组内调整数组的分布式存储方式
   // 当前本地缓冲区中的数据为 ARRAY[presum_length[rank - 1] : presum_length[rank]]
@@ -88,12 +88,12 @@ int main(int argc, char *argv[])
   if(slice_buf == NULL) errx(EXIT_FAILURE, "error allocating memory");
   MPI_Alltoallw(buf, scounts, sdispls, stypes, slice_buf, rcounts, rdispls, rtypes, MPI_COMM_WORLD);
   for(int receiver = 0; receiver < np; ++receiver) MPI_Type_free(&stypes[receiver]);
-  printf("[%2d] data rearranged in the group\n", rank);
+  //printf("[%2d] data rearranged in the group\n", rank);
 
   // 向父进程发送加工后的数组内容
   // 匹配：MPI_Gatherv(NULL, 0, MPI_INT, b, dist, displ, MPI_INT, MPI_ROOT, inter_comm);    
   MPI_Gatherv(slice_buf, slice_length, MPI_INT, NULL, NULL, NULL, MPI_INT, root, parent);
-  printf("[%2d] data sent to parent\n", rank);
+  //printf("[%2d] data sent to parent\n", rank);
 
   free(slice_buf);
   free(buf);
